@@ -132,3 +132,36 @@ def manual_sync():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+
+from google.cloud import firestore
+
+# Initialize Firestore (uses default Cloud Run credentials automatically)
+db = firestore.Client(project=os.getenv("GCP_PROJECT", "caramel-park-509712-q7"))
+COLLECTION = "trades_2575"
+
+# 1. On Container Start: Restore any open positions from Firestore
+def load_open_positions():
+    docs = db.collection(COLLECTION).where("status", "==", "open").stream()
+    for doc in docs:
+        positions[doc.id] = doc.to_dict()
+    print(f"Loaded {len(positions)} active positions from Firestore.")
+
+# 2. When a Buy Executes: Save to Firestore
+def record_buy(ca, symbol, buy_amount, tx_hash):
+    trade_data = {
+        "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M"),
+        "symbol": symbol,
+        "contract_address": ca,
+        "buy_amount": buy_amount,
+        "status": "open",
+        "tp1_hit": False,
+        "current_sl": 0.70,
+        "highest_peak": 1.00,
+        "realized_pnl": 0.00
+    }
+    db.collection(COLLECTION).document(ca).set(trade_data)
+    positions[ca] = trade_data
+
+# 3. When an Exit / Progress Updates: Update Firestore
+def record_update(ca, update_dict):
+    db.collection(COLLECTION).document(ca).update(update_dict)
