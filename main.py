@@ -136,8 +136,8 @@ if __name__ == "__main__":
 from google.cloud import firestore
 
 # Initialize Firestore (uses default Cloud Run credentials automatically)
-db = firestore.Client(project=os.getenv("GCP_PROJECT", "caramel-park-509712-q7"))
-COLLECTION = "trades_2575"
+db = firestore.Client(project=os.getenv("GCP_PROJECT", "opes-robinhood-executor"))
+COLLECTION = "trades-2575"
 
 # 1. On Container Start: Restore any open positions from Firestore
 def load_open_positions():
