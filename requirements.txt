@@ -1,4 +1,4 @@
-flask
-requests
-gunicorn
-google-cloud-firestore
+google-cloud-firestore>=2.14.0
+requests>=2.31.0
+Flask>=3.0.0
+gunicorn>=21.2.0
